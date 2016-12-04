@@ -175,7 +175,6 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             int hh = ky;
                             int sign = 1;
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            else { int sign = 1; }
                             if (0 == (ky % numSiteY)) { phase = std::polar(1.0, yFlux); }
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, ky);
@@ -187,7 +186,6 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             int hh = k;
                             int sign = 1;
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            else { int sign = 1; }
                             if (0 == (ky % numSiteY)) { phase = std::polar(1.0, yFlux); }
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, ky);

@@ -10,7 +10,7 @@ const double yFlux = 0.0*PI;
 const double zMag = 0.5;
 const std::string flagBounX = "OBC";
 const std::string flagBounY = "OBC";
-const bool sigma = true; // Used to switch between t-J model and \sigma-t-J model.
+const bool sigma = false; // Used to switch between t-J model and \sigma-t-J model.
 
 std::vector<int> spinBasis;
 std::vector<int> holeBasis;
