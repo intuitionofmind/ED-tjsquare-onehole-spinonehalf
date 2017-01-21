@@ -6,10 +6,10 @@
 PLAT = linux
 CPP = g++
 
-ARPACKPP_DIR = $(HOME)/arpackpp
-ARPACKPP_INC = $(ARPACKPP_DIR)/include
-SUPERLU_DIR = $(ARPACKPP_INC)
-UMFPACK_DIR = $(ARPACKPP_INC)
+ARPACKPP_DIR = ${HOME}/Downloads/arpackpp
+ARPACKPP_INC = ${ARPACKPP_DIR}/include
+SUPERLU_DIR = ${ARPACKPP_INC}
+UMFPACK_DIR = ${ARPACKPP_INC}
 
 # Defining ARPACK, LAPACK, UMFPACK, SUPERLU, BLAS and FORTRAN libraries.
 # See the arpack++ manual or the README file for directions on how to 
@@ -23,41 +23,36 @@ UMFPACK_DIR = $(ARPACKPP_INC)
 # Other libraries should be defined if the user intends to compile
 # arpack++ on another environment.
 
-ARPACK_LIB = -larpack
+
 LAPACK_LIB = -llapack
 SUPERLU_LIB = -lsuperlu
 BLAS_LIB = -lblas
+ARPACK_LIB = -larpack
 FORTRAN_LIBS = -lgfortran
 
-CPP_WARNINGS = -fpermissive 
-CPP_WARNINGS = -Wall -ansi -pedantic-errors
+CPP_WARNINGS = -fpermissive -Wall -ansi
+# CPP_WARNINGS =  -pedantic-errors
 CPP_DEBUG = -g
-CPP_OPTIM = -O2
-CPP_LIBS = 
-CPP_INC = 
+CPP_OPTIM = -O2 -std=c++11
 
-CPP_FLAGS = $(CPP_DEBUG) -D$(PLAT) -I$(ARPACKPP_INC) -I$(CPP_INC) \
-            $(CPP_WARNINGS) $(CPP_OPTIM) \
-	    -std=c++11
+CPP_FLAGS = -I${ARPACKPP_INC} \
+            ${CPP_DEBUG} ${CPP_WARNINGS} ${CPP_OPTIM} \
 
 # Putting all libraries together.
 
-ALL_LIBS = $(CPP_LIBS) $(ARPACK_LIB) \
-           $(BLAS_LIB) $(LAPACK_LIB) $(FORTRAN_LIBS) 
-
-# defining paths.
-
-# vpath %.h  $(ARPACK_INC)
+ALL_LIBS = -L/opt/local/lib/ \
+	   ${BLAS_LIB} ${LAPACK_LIB} ${ARPACK_LIB} ${FORTRAN_LIBS}
 
 OBJS = main.o
 TARGET = tjsquare 
 
-all:$(TARGET)
-$(TARGET):$(OBJS)
-	$(CPP) $(CPP_FLAGS) $(ALL_LIBS) $^ -o $@ $(LIB)
+all:${TARGET}
+$(TARGET):${OBJS}
+	${CPP} ${CPP_FLAGS} ${ALL_LIBS} $^ -o $@
 
 main.o:main.cpp
-	$(CPP) $(CPP_FLAGS) $(ALL_LIBS) -c $< -o $@ $(LIB)
+	${CPP} ${CPP_FLAGS} ${ALL_LIBS} -c $< -o $@
 
 clean:
-	rm -f $(TARGET) *.o log *.dat
+	rm -f ${TARGET} *.o log *.dat
+	rm -rf *.dSYM

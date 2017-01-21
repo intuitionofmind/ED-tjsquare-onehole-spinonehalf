@@ -7,7 +7,8 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include <malloc.h>
+// #include <malloc.h>
+#include <stdlib.h>
 #include <ctime>
 #include <algorithm>
 #include <initializer_list>
