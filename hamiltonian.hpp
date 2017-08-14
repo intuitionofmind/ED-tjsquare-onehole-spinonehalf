@@ -144,7 +144,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             SwapBit<numSite>(temp, k, kx);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, std::abs(kx-k)-1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*phase*v[l];
                             }
                         else if (h == kx) {
                             int hh = k;
@@ -155,7 +155,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             SwapBit<numSite>(temp, k, kx);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, std::abs(kx-k)-1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*phase*v[l];
                             }
                         }
 
@@ -180,7 +180,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             SwapBit<numSite>(temp, k, ky);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, std::abs(ky-k)-1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phase*v[l];
                             }
                         else if (h == ky) {
                             int hh = k;
@@ -191,7 +191,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             SwapBit<numSite>(temp, k, ky);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, std::abs(ky-k)-1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phase*v[l];
                             }
                         }
                     }

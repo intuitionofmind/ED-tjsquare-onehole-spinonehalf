@@ -27,8 +27,8 @@ int main() {
         auto eigVec = new arcomplex<double>[numEval*dim];
         auto v1 = new arcomplex<double>[dim];
         auto v2 = new arcomplex<double>[dim];
-        double J = 0.3333333333333333;
-        // double J = 0.3;
+        // double J = 0.3333333333333333;
+        double J = 0.3;
         // PrintHam(J);
         file_log << numSite << std::endl;
         file_log << numSam << std::endl;
@@ -63,7 +63,7 @@ int main() {
                 for (int k = 0; k < dim; ++k) {
                     double rr = std::real(v1[k]);
                     double ii = std::imag(v1[k]);
-//                    if (0 == i && 0 == j) { std::cout << rr << " " << ii << std::endl; }
+                   if (0 == i && 0 == j) { std::cout << rr << " " << ii << std::endl; }
                     file_eigvecs.write((char*)(&rr), sizeof(double));
                     file_eigvecs.write((char*)(&ii), sizeof(double));
                     rr = std::real(v2[k]);
