@@ -2,6 +2,8 @@
  * This it the file to define the Hamiltonian operoator and related operations.
  */
 
+#include "arcomp.h"
+
 template<int N>
 int RetrieveSpin(std::bitset<N> config, int h) {
         std::bitset<N> spin;
@@ -30,10 +32,15 @@ class tjSquareHalf {
         int Dim();
         T CoupStren();
         T Dot(T* v1, T* v2);
+        void VecPlus(T* v1, T* v2, T* w);
+        void VecMinus(T* v1, T* v2, T* w);
+        void MultNumber(T a, T*v);
         void Copy(T* v1, T* v2);
+        void Normalize(T* v);
         void SetOne(T* v, int i);
         void SortEval(int n, T* w1, T* w2, std::vector<int>& order);
         void MultVec(T* v, T* w);
+        void TimeEvolution(double step, int num, T* vInit, T* vFinal);
         T Correlation(T* v, int i, int j);
         void Marshall(T* v1, T* v2);
         // constructor
@@ -58,9 +65,35 @@ T tjSquareHalf<T>::Dot(T* v1, T* v2) {
         }
 
 template<typename T>
+void tjSquareHalf<T>::VecPlus(T* v1, T* v2, T* w) {
+        int len = Dim();
+        for (int i = 0; i < len; ++i) { w[i]= v1[i]+v2[i]; }
+        }
+
+template<typename T>
+void tjSquareHalf<T>::VecMinus(T* v1, T* v2, T* w) {
+        int len = Dim();
+        for (int i = 0; i < len; ++i) { w[i]= v1[i]-v2[i]; }
+        }
+
+template<typename T>
+void tjSquareHalf<T>::MultNumber(T a, T* v) {
+        int len = Dim();
+        for (int i = 0; i < len; ++i) { v[i] = a*v[i]; }
+        }
+
+template<typename T>
 void tjSquareHalf<T>::Copy(T* v1, T* v2) {
         int len = Dim();
         for (int i = 0; i < len; ++i) { v2[i] = v1[i]; }
+        }
+
+template<typename T>
+void tjSquareHalf<T>::Normalize(T* v) {
+        T z = Dot(v, v);
+        double f = sqrt(std::real(z));
+        int len = Dim();
+        for (int i = 0; i < len; ++i) { v[i] = v[i]/f; }
         }
 
 template<typename T>
@@ -200,6 +233,52 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                     }
                 }
             }
+        }
+
+// Integrate the time evolution operator U=exp(-i*H*t) by num steps with Askar-Goldberg method.
+template<typename T>
+void tjSquareHalf<T>::TimeEvolution(double step, int num, T* vInit, T* vFinal) {
+        arcomplex<double> imagUnit (0.0, 1.0);
+        // In askar-Goldberg method, u, v, w denote n-1, n, n+1 states.
+        auto u = new arcomplex<double>[dim];
+        auto v = new arcomplex<double>[dim];
+        auto w = new arcomplex<double>[dim];
+        auto temp = new arcomplex<double>[dim];
+        auto tempTemp = new arcomplex<double>[dim];
+
+        for (int i = 0; i < num; ++i) {
+            if (0 == i) {
+                Copy(vInit, w);
+                Copy(w, v);
+                }
+            else if (1 == i) {
+                MultVec(v, temp);
+                MultNumber(imagUnit*step, temp);
+                VecMinus(v, temp, w);
+                Normalize(w);
+                // Move a step forward.
+                Copy(v, u);
+                Copy(w, v);
+                }
+            else {
+                MultVec(v, temp);
+                MultVec(temp, tempTemp);
+                MultNumber(2.0*imagUnit*step, temp);
+                VecMinus(u, temp, w);
+                MultVec(tempTemp, temp);  // For H^{3}. 
+                MultNumber(0.5*imagUnit*step*step*step, temp);
+                VecPlus(w, temp, w);
+                Copy(v, u);
+                Copy(w, v);
+                }
+            }
+
+        Copy(w, vFinal);
+        delete [] u;
+        delete [] v;
+        delete [] w;
+        delete [] temp;
+        delete [] tempTemp;
         }
 
 template<typename T>
