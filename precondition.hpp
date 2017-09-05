@@ -1,5 +1,5 @@
 const int numSiteX = 4;
-const int numSiteY = 4;
+const int numSiteY = 3;
 const int numSite = numSiteX*numSiteY;
 const int numHole = 1;
 const int numEval = 5; // Desired eigenvalues to be found by ARPACK++.

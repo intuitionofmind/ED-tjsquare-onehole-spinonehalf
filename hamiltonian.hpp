@@ -41,6 +41,7 @@ class tjSquareHalf {
         void SortEval(int n, T* w1, T* w2, std::vector<int>& order);
         void MultVec(T* v, T* w);
         void TimeEvolution(double step, int num, T* vInit, T* vFinal);
+        void Sz(int x, int y, T* v, T* w);
         T Correlation(T* v, int i, int j);
         void Marshall(T* v1, T* v2);
         // constructor
@@ -104,7 +105,7 @@ void tjSquareHalf<T>::SetOne(T* v, int i) {
         }
 
 /*
- * Note that the ArcomStdEig() in ARPACKPP will not sort the eigenvalues you want while ArsymStdEig() does. SortEval() funtion helps to sort the eigenvalues and its order is stored in the vector "order" such that you can access the i'th smallest eigenvalues according to "order[i]" in the original sequence. 
+* Note that the ArcomStdEig() in ARPACKPP will not sort the eigenvalues you want while ArsymStdEig() does. SortEval() funtion helps to sort the eigenvalues and its order is stored in the vector "order" such that you can access the i'th smallest eigenvalues according to "order[i]" in the original sequence. 
  */
 
 template<typename T>
@@ -282,6 +283,28 @@ void tjSquareHalf<T>::TimeEvolution(double step, int num, T* vInit, T* vFinal) {
         }
 
 template<typename T>
+void tjSquareHalf<T>::Sz(int x, int y, T* v, T* w) {
+        int r = y*numSiteX+x;
+        int len = Dim();
+        for (int l = 0; l < len; ++l) { w[l] = 0.0; } 
+
+        for (int l = 0; l < len; ++l) {
+            int s = spinBasis[l % subDim];
+            int h = holeBasis[int(l/subDim)];
+            std::bitset<numSite> spinConfig(s);
+            std::bitset<numSite> config; 
+
+            for (int i = 0; i < numSite; ++i) {
+                if (i < h) { config[i] = spinConfig[i]; }
+                else if (i > h) { config[i] = spinConfig[i-1]; }
+                }
+
+            if (h != r && 1 == config[r]) { w[l] = 0.5*v[l]; }
+            else if (h != r && 0 == config[r]) { w[l] =-0.5*v[l]; }
+            }
+        }
+
+template<typename T>
 T tjSquareHalf<T>::Correlation(T* v, int i, int j) {
         int len = Dim();
         T res = 0.0;
@@ -311,8 +334,8 @@ void tjSquareHalf<T>::Marshall(T* v1, T* v2) {
             for (int j = 0; j < numSite; ++j){
                 if ( 0 == j % 2) {
                     if (j == h) {++n;} // Only for the electron removed with spin down.
-                    else if (j < h && 0 == spinConfig[j]) {++n;}
-                    else if (j > h && 0 == spinConfig[j-1]) {++n;}
+                    else if (j < h && 0 == spinConfig[j]) { ++n; }
+                    else if (j > h && 0 == spinConfig[j-1]) { ++n; }
                     }
                 }
             v2[i] = pow(-1, n)*pow(-1, h)*v1[i]; // The second pow() only exists for the electron removed with spin down.
