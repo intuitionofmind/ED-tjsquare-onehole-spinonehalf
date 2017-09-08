@@ -2,7 +2,7 @@ const int numSiteX = 4;
 const int numSiteY = 2;
 const int numSite = numSiteX*numSiteY;
 const int numHole = 1;
-const int numEval = 5; // Desired eigenvalues to be found by ARPACK++.
+const int numEval = 200; // Desired eigenvalues to be found by ARPACK++.
 const int numSam = 1;
 const double step = 0.1;
 const double xFlux = 0.0*PI;
@@ -11,7 +11,7 @@ const double zMag = 0.5;
 const std::string flagBounX = "OBC";
 const std::string flagBounY = "OBC";
 const bool sigma = false; // Used to switch between t-J model and \sigma-t-J model.
-const double beta = 20.0;
+const double beta = 20.0; // Inverse temperature. 
 
 std::vector<int> spinBasis;
 std::vector<int> holeBasis;

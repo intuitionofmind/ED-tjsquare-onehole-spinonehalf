@@ -72,7 +72,7 @@ int main() {
                     file_eigvecs.write((char*)(&imag), sizeof(double));
                     }
                 }
-        
+        /* 
         // Test TimeEvolution() functions.
         auto v = new arcomplex<double>[dim];
         auto v1 = new arcomplex<double>[dim];
@@ -82,7 +82,7 @@ int main() {
                 arcomplex<double> e (eigVec[s*dim+l], 0.0);
                 v[l] = e;
                 }
-        // TimeEvolution test.
+
         tjSquareHalf<arcomplex<double>> A(dim, 1.0);
         auto temp = new arcomplex<double>[dim];
         int num = 100;
@@ -99,7 +99,60 @@ int main() {
         delete [] v;
         delete [] v1;
         delete [] v2;
+ */
 
+//-------------OTOC
+        int num = 1000;
+        double timeStep = 0.001;
+        auto v = new arcomplex<double>[dim];
+
+        int x0 = 1;
+        int y0 = 0;
+        int x1 = 2;
+        int y1 = 1;
+/* 
+        tjSquareHalf<arcomplex<double>> A(dim, J);
+        int s = 0;
+        for (int l = 0; l < dim; ++l) {
+                arcomplex<double> e (eigVec[s*dim+l], 0.0);
+                v[l] = e;
+                }
+        for (int i = 0; i < num; ++i) {
+                int n = i*10;
+                double bf = A.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
+                std::cout << std::setprecision(14) << bf << std::endl;
+                file_log << i << std::endl;
+                }
+ */
+        int cut = 100;
+        auto zArray = new double[cut]; // The array for partition function. 
+        double pf = 0.0; // Partition function. 
+        for (int i = 0; i < cut; ++i) {
+                double deltaE = eigValR[i]-eigValR[0];
+                zArray[i] = std::exp(-1.0*beta*deltaE);
+                // std::cout << deltaE << " " <<zArray[i] << std::endl;
+                pf += zArray[i];
+                }
+
+        tjSquareHalf<arcomplex<double>> A(dim, J);
+         for (int i = 0; i < num; ++i) {
+                int n = i*10;
+                double tr = 0.0; // Quantity traced over. 
+                for (int j = 0; j < cut; ++j) {
+                    for (int l = 0; l < dim; ++l) {
+                        arcomplex<double> e (eigVec[j*dim+l], 0.0);
+                        v[l] = e;
+                        }
+                    double butterfly = A.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
+                    tr += zArray[j]*butterfly;
+                    }
+                tr = tr/pf;
+                std::cout << std::setprecision(14) << tr << std::endl;
+                file_log << i << std::endl;
+                }
+
+        delete [] v;
+ 
         delete [] eigValR;
         delete [] eigValI;
         delete [] eigVec;
