@@ -40,8 +40,10 @@ class tjSquareHalf {
         void SetOne(T* v, int i);
         void SortEval(int n, T* w1, T* w2, std::vector<int>& order);
         void MultVec(T* v, T* w);
-        void TimeEvolution(double step, int num, T* vInit, T* vFinal);
+        void TimeEvolutionSimple(double step, int num, T* vInit, T* vFinal);
+        void TimeEvolutionAG(double step, int num, T* vInit, T* vFinal);
         void Sz(int x, int y, T* v, T* w);
+        double TimeSzCommutatorSquare(int x0, int y0, int x1, int y1, double timeStep, int num, T* vec);
         T Correlation(T* v, int i, int j);
         void Marshall(T* v1, T* v2);
         // constructor
@@ -68,12 +70,14 @@ T tjSquareHalf<T>::Dot(T* v1, T* v2) {
 template<typename T>
 void tjSquareHalf<T>::VecPlus(T* v1, T* v2, T* w) {
         int len = Dim();
+        for (int l = 0; l < len; ++l) { w[l] = 0.0; } 
         for (int i = 0; i < len; ++i) { w[i]= v1[i]+v2[i]; }
         }
 
 template<typename T>
 void tjSquareHalf<T>::VecMinus(T* v1, T* v2, T* w) {
         int len = Dim();
+        for (int l = 0; l < len; ++l) { w[l] = 0.0; } 
         for (int i = 0; i < len; ++i) { w[i]= v1[i]-v2[i]; }
         }
 
@@ -236,14 +240,42 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
             }
         }
 
+template<typename T>
+void tjSquareHalf<T>::TimeEvolutionSimple(double step, int num, T* vInit, T* vFinal) {
+        arcomplex<double> imagUnit (0.0, 1.0);
+        auto v = new arcomplex<double>[dim];
+        auto w = new arcomplex<double>[dim];
+        auto temp = new arcomplex<double>[dim];
+
+        for (int i = 0; i < num; ++i) {
+            if (0 == i) {
+                Copy(vInit, w);
+                Copy(w, v);
+                }
+            else {
+                MultVec(v, temp);
+                MultNumber(imagUnit*step, temp);
+                VecMinus(v, temp, w);
+                Normalize(w);
+                Copy(w, v);
+                }
+            }
+
+        Copy(w, vFinal);
+        delete [] v;
+        delete [] w;
+        delete [] temp;
+        }
+
 // Integrate the time evolution operator U=exp(-i*H*t) by num steps with Askar-Goldberg method.
 template<typename T>
-void tjSquareHalf<T>::TimeEvolution(double step, int num, T* vInit, T* vFinal) {
+void tjSquareHalf<T>::TimeEvolutionAG(double step, int num, T* vInit, T* vFinal) {
         arcomplex<double> imagUnit (0.0, 1.0);
         // In askar-Goldberg method, u, v, w denote n-1, n, n+1 states.
         auto u = new arcomplex<double>[dim];
         auto v = new arcomplex<double>[dim];
         auto w = new arcomplex<double>[dim];
+        auto ww = new arcomplex<double>[dim];
         auto temp = new arcomplex<double>[dim];
         auto tempTemp = new arcomplex<double>[dim];
 
@@ -253,6 +285,7 @@ void tjSquareHalf<T>::TimeEvolution(double step, int num, T* vInit, T* vFinal) {
                 Copy(w, v);
                 }
             else if (1 == i) {
+            // else {
                 MultVec(v, temp);
                 MultNumber(imagUnit*step, temp);
                 VecMinus(v, temp, w);
@@ -261,17 +294,19 @@ void tjSquareHalf<T>::TimeEvolution(double step, int num, T* vInit, T* vFinal) {
                 Copy(v, u);
                 Copy(w, v);
                 }
+
             else {
                 MultVec(v, temp);
                 MultVec(temp, tempTemp);
                 MultNumber(2.0*imagUnit*step, temp);
-                VecMinus(u, temp, w);
-                MultVec(tempTemp, temp);  // For H^{3}. 
-                MultNumber(0.5*imagUnit*step*step*step, temp);
-                VecPlus(w, temp, w);
+                VecMinus(u, temp, ww);
+                MultVec(tempTemp, temp);
+                MultNumber(0.5*imagUnit*std::pow(step, 3), temp);
+                VecPlus(ww, temp, w);
                 Copy(v, u);
                 Copy(w, v);
                 }
+ 
             }
 
         Copy(w, vFinal);
@@ -303,6 +338,102 @@ void tjSquareHalf<T>::Sz(int x, int y, T* v, T* w) {
             else if (h != r && 0 == config[r]) { w[l] =-0.5*v[l]; }
             }
         }
+
+template<typename T>
+double tjSquareHalf<T>::TimeSzCommutatorSquare(int x0, int y0, int x1, int y1, double timeStep, int num, T* vec) {
+        auto v = new arcomplex<double>[dim];
+        auto w = new arcomplex<double>[dim];
+        int len = Dim();
+        arcomplex<double> zero (0.0 ,0.0);
+        for (int i = 0; i < len; ++i) {
+            v[i] = zero;
+            w[i] = zero;
+            }
+/* 
+        // w(t)vvw(t)
+        TimeEvolutionSimple(timeStep, num, vec, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionSimple(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        Sz(x0, y0, v, w);
+        TimeEvolutionSimple(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionSimple(-1.0*timeStep, num, w, v);
+        double p0 = std::abs(Dot(vec, v));
+        // vw(t)w(t)v
+        Sz(x0, y0, vec, w);
+        TimeEvolutionSimple(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionSimple(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        double p1 = std::abs(Dot(vec, v));
+        // w(t)vw(t)v
+        Sz(x0, y0, vec, w);
+        TimeEvolutionSimple(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionSimple(-1.0*timeStep, num, w, v);
+        Sz(x0, y0, v, w);
+        TimeEvolutionSimple(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionSimple(-1.0*timeStep, num, w, v);
+        double p2 = std::abs(Dot(vec, v));
+        // vw(t)vw(t)
+        TimeEvolutionSimple(timeStep, num, vec, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionSimple(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        TimeEvolutionSimple(timeStep, num, v, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionSimple(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        double p3 = std::abs(Dot(vec, v));
+ */
+        // w(t)vvw(t)
+        TimeEvolutionAG(timeStep, num, vec, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionAG(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        Sz(x0, y0, v, w);
+        TimeEvolutionAG(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionAG(-1.0*timeStep, num, w, v);
+        double p0 = std::abs(Dot(vec, v));
+        // vw(t)w(t)v
+        Sz(x0, y0, vec, w);
+        TimeEvolutionAG(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionAG(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        double p1 = std::abs(Dot(vec, v));
+        // w(t)vw(t)v
+        Sz(x0, y0, vec, w);
+        TimeEvolutionAG(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionAG(-1.0*timeStep, num, w, v);
+        Sz(x0, y0, v, w);
+        TimeEvolutionAG(timeStep, num, w, v);
+        Sz(x1, y1, v, w);
+        TimeEvolutionAG(-1.0*timeStep, num, w, v);
+        double p2 = std::abs(Dot(vec, v));
+        // vw(t)vw(t)
+        TimeEvolutionAG(timeStep, num, vec, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionAG(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        TimeEvolutionAG(timeStep, num, v, w);
+        Sz(x1, y1, w, v);
+        TimeEvolutionAG(-1.0*timeStep, num, v, w);
+        Sz(x0, y0, w, v);
+        double p3 = std::abs(Dot(vec, v));
+        double p = -p0-p1+p2+p3;
+        // std::cout << p << std::endl;
+        delete [] v;
+        delete [] w;
+
+        return p;
+    }
 
 template<typename T>
 T tjSquareHalf<T>::Correlation(T* v, int i, int j) {

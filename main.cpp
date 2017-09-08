@@ -1,34 +1,19 @@
 #include "head.h"
 #include "precondition.hpp"
 #include "hamiltonian.hpp"
-// #include "arssym.h"
+#include "arssym.h"
 #include "arcomp.h"
-#include "arscomp.h"
+// #include "arscomp.h"
 
 int main() {
-        /*        
-        arcomplex<double> a (1.0, 2.0);  // Test arcomplex class. 
-        arcomplex<double> b (3.0, 4.0);
-        std::cout << a*b << std::endl;
-        std::cout << std::real(a*b) << std::endl;
-        std::cout << std::imag(a*b) << std::endl;
-        std::cout << std::cos(flux) << std::endl;
-        std::cout << std::sin(flux) << std::endl;
-        std::cout << std::polar(1.0, flux) << std::endl;
-        */
-
         std::ofstream file_log("log", std::ios_base::app);
         std::ofstream file_eigvals("eigenvalues.dat", std::ios_base::app | std::ios_base::binary);
         std::ofstream file_eigvecs("eigenvectors.dat", std::ios_base::app | std::ios_base::binary);
-        std::ofstream file_eigvecs_translated("eigenvectors_translated.dat", std::ios_base::app | std::ios_base::binary);
         time_t start, end;
         start = time(NULL);
-        auto eigVal = new arcomplex<double>[numEval];
-        auto eigValSort = new arcomplex<double>[numEval];
-        auto eigVec = new arcomplex<double>[numEval*dim];
-        auto v1 = new arcomplex<double>[dim];
-        auto v2 = new arcomplex<double>[dim];
-        // double J = 0.3333333333333333;
+        auto eigValR = new double[numEval];
+        auto eigValI = new double[numEval];
+        auto eigVec = new double[(numEval+1)*dim];
         double J = 0.3;
         // PrintHam(J);
         file_log << numSite << std::endl;
@@ -40,120 +25,90 @@ int main() {
         file_log << sigma << std::endl;
 /* 
         for (int i = 0; i < numSam; ++i) {
-            std::cout << i << std::endl;
-            tjSquareHalf<arcomplex<double>> H(dim, J);
-            ARCompStdEig<double, tjSquareHalf<arcomplex<double>>> prob;
-            prob.DefineParameters(dim, numEval, &H, &tjSquareHalf<arcomplex<double>>::MultVec, "SR");
-            int nconv = prob.EigenValVectors(eigVec, eigVal);
-            std::vector<int> order;
-            H.SortEval(nconv, eigVal, eigValSort, order);
-            for (int j = 0; j < nconv; ++j) {
-                double r = std::real(eigValSort[j]);
-                file_eigvals.write((char*)(&r), sizeof(double));
-                if (0 == i) { std::cout << "eval: " << std::setprecision(14) << (eigValSort[j])*3.0 << std::endl; }
-                for (int k = 0; k < dim; ++k) {
-                    v1[k] = eigVec[order[j]*dim+k];
-                    }
-                for (int k = 0; k < dim; ++k) {v2[k] = v1[k];}
-                for (int k = 0; k < dim; ++k) {
-                    double rr = std::real(v1[k]);
-                    double ii = std::imag(v1[k]);
-                    if (0 == i && 0 == j) { std::cout << rr << " " << ii << std::endl; }
-                    file_eigvecs.write((char*)(&rr), sizeof(double));
-                    file_eigvecs.write((char*)(&ii), sizeof(double));
-                    rr = std::real(v2[k]);
-                    ii = std::imag(v2[k]);
-                    file_eigvecs_translated.write((char*)(&rr), sizeof(double));
-                    file_eigvecs_translated.write((char*)(&ii), sizeof(double));
-                    }
+            tjSquareHalf<double> H(dim, J);
+            ARSymStdEig<double, tjSquareHalf<double>>
+            prob(dim, numEval, &H, &tjSquareHalf<double>::MultVec, "SA");
+            int nconv = prob.EigenValVectors(eigVec, eigValR, eigValI);
 
-                file_log << (i+1) << std::endl;
-                J += 0.1;
+            for (int j = 0; j < nconv; ++j) {
+                file_eigvals.write((char*)(&eigValR[j]), sizeof(double));
+                for (int k = 0; k < dim; ++k) {
+                    file_eigvecs.write((char*)(&eigVec[j*dim+k]), sizeof(double));
+                    double imag = 0.;
+                    file_eigvecs.write((char*)(&imag), sizeof(double));
+                    }
                 }
+
+            // Check the orthogonality of the eigenvectors.
+            [>int nPrint = nconv;
+            for (int j = 0; j < nPrint; ++j) {
+            std::cout << std::setprecision(10) << std::real(eigValR[j]) << std::endl;
+            }
+            for (int j = 0; j < nPrint; ++j) {
+            for (int k = 0; k < nPrint; ++k) {
+            for (int l = 0; l < dim; l++) {
+            v1[l] = eigVec[j*dim+l];
+            v2[l] = eigVec[k*dim+l];
+            }
+            std::cout << std::abs(H.Dot(v1, v2)) << "  ";
+            }
+            std::cout << std::endl;
+            }
+           <]
+            file_log << (i+1) << std::endl;
+            J += step;
             }
  */
-        tjSquareHalf<arcomplex<double>> H(dim, J);
-        ARCompStdEig<double, tjSquareHalf<arcomplex<double>>> prob;
-        prob.DefineParameters(dim, numEval, &H, &tjSquareHalf<arcomplex<double>>::MultVec, "SR");
-        int nconv = prob.EigenValVectors(eigVec, eigVal);
-        std::vector<int> order;
-        H.SortEval(nconv, eigVal, eigValSort, order);
+        tjSquareHalf<double> H(dim, J);
+        ARSymStdEig<double, tjSquareHalf<double>>
+        prob(dim, numEval, &H, &tjSquareHalf<double>::MultVec, "SA");
+        int nconv = prob.EigenValVectors(eigVec, eigValR, eigValI);
 
-        std::cout << "Now for OTOC." << std::endl;
-
-        int numTime = 1000;
-        double timeStep = 0.01;
-        int x0 = 1;
-        int y0 = 1;
-        int x1 = 2;
-        int y1 = 1;
-
-        auto v0 = new arcomplex<double>[dim];
-        auto v = new arcomplex<double>[dim];
-        auto w = new arcomplex<double>[dim];
-        for (int i = 0; i < numTime; ++i) {
-                int j = 0;
-                for (int l = 0; l < dim; ++l) {
-                    v0[l] = eigVec[order[j]*dim+l];
+        for (int j = 0; j < nconv; ++j) {
+                file_eigvals.write((char*)(&eigValR[j]), sizeof(double));
+                for (int k = 0; k < dim; ++k) {
+                    file_eigvecs.write((char*)(&eigVec[j*dim+k]), sizeof(double));
+                    double imag = 0.;
+                    file_eigvecs.write((char*)(&imag), sizeof(double));
                     }
-                // w(t)vvw(t)
-                H.TimeEvolution(timeStep, i, v0, w);
-                H.Sz(x1, y1, w, v);
-                H.TimeEvolution(-1.0*timeStep, i, v, w);
-                H.Sz(x0, y0, w, v);
-                H.Sz(x0, y0, v, w);
-                H.TimeEvolution(timeStep, i, w, v);
-                H.Sz(x1, y1, v, w);
-                H.TimeEvolution(-1.0*timeStep, i, w, v);
-                double p0 = std::abs(H.Dot(v0, v));
-                // vw(t)w(t)v
-                H.Sz(x0, y0, v0, w);
-                H.TimeEvolution(timeStep, i, w, v);
-                H.Sz(x1, y1, v, w);
-                H.Sz(x1, y1, w, v);
-                H.TimeEvolution(-1.0*timeStep, i, v, w);
-                H.Sz(x0, y0, w, v);
-                double p1 = std::abs(H.Dot(v0, v));
-                // w(t)vw(t)v
-                H.Sz(x0, y0, v0, w);
-                H.TimeEvolution(timeStep, i, w, v);
-                H.Sz(x1, y1, v, w);
-                H.TimeEvolution(-1.0*timeStep, i, w, v);
-                H.Sz(x0, y0, v, w);
-                H.TimeEvolution(timeStep, i, w, v);
-                H.Sz(x1, y1, v, w);
-                H.TimeEvolution(-1.0*timeStep, i, w, v);
-                double p2 = std::abs(H.Dot(v0, v));
-                // vw(t)vw(t)
-                H.TimeEvolution(timeStep, i, v0, w);
-                H.Sz(x1, y1, w, v);
-                H.TimeEvolution(-1.0*timeStep, i, v, w);
-                H.Sz(x0, y0, w, v);
-                H.TimeEvolution(timeStep, i, v, w);
-                H.Sz(x1, y1, w, v);
-                H.TimeEvolution(-1.0*timeStep, i, v, w);
-                H.Sz(x0, y0, w, v);
-                double p3 = std::abs(H.Dot(v0, v));
-
-                double p = p0+p1-p2-p3;
-                std::cout << i << " " << p << std::endl;
                 }
-        delete [] v0;
+        
+        // Test TimeEvolution() functions.
+        auto v = new arcomplex<double>[dim];
+        auto v1 = new arcomplex<double>[dim];
+        auto v2 = new arcomplex<double>[dim];
+        int s = 0;
+        for (int l = 0; l < dim; ++l) {
+                arcomplex<double> e (eigVec[s*dim+l], 0.0);
+                v[l] = e;
+                }
+        // TimeEvolution test.
+        tjSquareHalf<arcomplex<double>> A(dim, 1.0);
+        auto temp = new arcomplex<double>[dim];
+        int num = 100;
+        double timeStep = 0.001;
+        for (int i = 0; i < num; ++i) {
+            int n = i*10;
+            A.TimeEvolutionSimple(timeStep, n, v, v1);
+            A.TimeEvolutionAG(timeStep, n, v, v2);
+            A.VecMinus(v1, v2, temp);
+            std::cout << n << " " << A.Dot(v1, v1) << " " << A.Dot(v2, v2) << " " << A.Dot(temp, temp) << std::endl;
+            // std::cout << std::setprecision(14) << std::abs(A.Dot(temp, temp)) << std::endl;
+            std::cout << std::endl;
+            }
         delete [] v;
-        delete [] w;
-
-        delete [] eigVal;
-        delete [] eigValSort;
-        delete [] eigVec;
         delete [] v1;
         delete [] v2;
+
+        delete [] eigValR;
+        delete [] eigValI;
+        delete [] eigVec;
 
         end = time(NULL);
 
         file_log << "Time: " << (end-start)/60.0 << " min" << std::endl;
         file_eigvals.close();
         file_eigvecs.close();
-        file_eigvecs_translated.close();
         file_log.close();
         return 1;
     }

@@ -1,5 +1,5 @@
 const int numSiteX = 4;
-const int numSiteY = 3;
+const int numSiteY = 2;
 const int numSite = numSiteX*numSiteY;
 const int numHole = 1;
 const int numEval = 5; // Desired eigenvalues to be found by ARPACK++.
@@ -8,9 +8,10 @@ const double step = 0.1;
 const double xFlux = 0.0*PI;
 const double yFlux = 0.0*PI;
 const double zMag = 0.5;
-const std::string flagBounX = "PBC";
-const std::string flagBounY = "PBC";
+const std::string flagBounX = "OBC";
+const std::string flagBounY = "OBC";
 const bool sigma = false; // Used to switch between t-J model and \sigma-t-J model.
+const double beta = 20.0;
 
 std::vector<int> spinBasis;
 std::vector<int> holeBasis;
