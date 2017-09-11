@@ -147,15 +147,19 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
             std::bitset<numSite> spinConfig(s); // the highest bits for the number of (numSite-numHole) are filled with '0' while do not have real meanings but just for convenience
             std::bitset<numSite> config; // initialize config with all 0s
 
-            // fuse hole and spin to give rise to a tJ configuration
+            // Fuse hole and spin to give rise to a tJ configuration.
+            int ii = 0;
             for (int i = 0; i < numSite; ++i) {
-                if (i < h) { config[i] = spinConfig[i]; }
-                else if (i > h) { config[i] = spinConfig[i-1]; }
+                if (h == i) { continue; }
+                else {
+                    config[i] = spinConfig[ii];
+                    ++ii;
+                    }
                 }
 
             for (int j = 0; j < numSiteY; ++j) {
                 for (int i = 0; i <numSiteX; ++i) {
-                    T phase = 1.0; // sign for fermion hopping and possible flux added on the boudary 
+                    T phase = 1.0; // Sign for fermion hopping and possible flux added on the boudary.
                     int k = j*numSiteX+i;
 
                     // along x-direction

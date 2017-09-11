@@ -60,8 +60,9 @@ int main() {
             }
  */
         tjSquareHalf<double> H(dim, J);
+        int n = 10;
         ARSymStdEig<double, tjSquareHalf<double>>
-        prob(dim, numEval, &H, &tjSquareHalf<double>::MultVec, "SA");
+        prob(dim, n, &H, &tjSquareHalf<double>::MultVec, "SA");
         int nconv = prob.EigenValVectors(eigVec, eigValR, eigValI);
 
         for (int j = 0; j < nconv; ++j) {
@@ -72,6 +73,7 @@ int main() {
                     file_eigvecs.write((char*)(&imag), sizeof(double));
                     }
                 }
+        std::cout << dim << " " << nconv << std::endl;
         /* 
         // Test TimeEvolution() functions.
         auto v = new arcomplex<double>[dim];

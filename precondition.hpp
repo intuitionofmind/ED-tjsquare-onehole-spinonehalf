@@ -1,4 +1,4 @@
-const int numSiteX = 4;
+const int numSiteX = 6;
 const int numSiteY = 2;
 const int numSite = numSiteX*numSiteY;
 const int numHole = 1;
