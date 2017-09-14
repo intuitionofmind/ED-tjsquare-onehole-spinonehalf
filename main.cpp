@@ -14,7 +14,7 @@ int main() {
         auto eigValR = new double[numEval];
         auto eigValI = new double[numEval];
         auto eigVec = new double[(numEval+1)*dim];
-        double J = 0.3;
+        double J = 0.1;
         // PrintHam(J);
         file_log << numSite << std::endl;
         file_log << numSam << std::endl;
