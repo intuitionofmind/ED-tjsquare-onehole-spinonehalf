@@ -14,7 +14,7 @@ int main() {
         auto eigValR = new double[numEval];
         auto eigValI = new double[numEval];
         auto eigVec = new double[(numEval+1)*dim];
-        double J = 0.1;
+        double J = 0.3;
         // PrintHam(J);
         file_log << numSite << std::endl;
         file_log << numSam << std::endl;
@@ -60,9 +60,8 @@ int main() {
             }
  */
         tjSquareHalf<double> H(dim, J);
-        int n = 10;
         ARSymStdEig<double, tjSquareHalf<double>>
-        prob(dim, n, &H, &tjSquareHalf<double>::MultVec, "SA");
+        prob(dim, numEval, &H, &tjSquareHalf<double>::MultVec, "SA");
         int nconv = prob.EigenValVectors(eigVec, eigValR, eigValI);
 
         for (int j = 0; j < nconv; ++j) {

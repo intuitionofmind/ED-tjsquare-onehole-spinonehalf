@@ -147,10 +147,10 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
             std::bitset<numSite> spinConfig(s); // the highest bits for the number of (numSite-numHole) are filled with '0' while do not have real meanings but just for convenience
             std::bitset<numSite> config; // initialize config with all 0s
 
-            // Fuse hole and spin to give rise to a tJ configuration.
+            // fuse hole and spin to give rise to a tJ configuration
             int ii = 0;
             for (int i = 0; i < numSite; ++i) {
-                if (h == i) { continue; }
+                if (zink == i || h == i) { continue; }
                 else {
                     config[i] = spinConfig[ii];
                     ++ii;
@@ -159,12 +159,14 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
 
             for (int j = 0; j < numSiteY; ++j) {
                 for (int i = 0; i <numSiteX; ++i) {
-                    T phase = 1.0; // Sign for fermion hopping and possible flux added on the boudary.
+                    T phase = 1.0; // sign for fermion hopping and possible flux added on the boudary 
                     int k = j*numSiteX+i;
+                    if (zink == k) { continue; }
 
                     // along x-direction
                     int kx = j*numSiteX+((i+1) % numSiteX);
-                    if ("PBC" == flagBounX || kx > k) {
+                    if (zink == kx) { continue; }
+                    else if ("PBC" == flagBounX || kx > k) {
                         // Heisenberg J term
                         if (k != h && kx != h && config[k] != config[kx]) {
                             w[l] -= 0.5*J*v[l];
@@ -204,7 +206,8 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
 
                     // along y-direction
                     int ky = ((j+1) % numSiteY)*numSiteX+i;
-                    if ("PBC" == flagBounY || ky > k) {
+                    if (zink == ky) { continue; }
+                    else if ("PBC" == flagBounY || ky > k) {
                         if (k != h && ky != h && config[k] != config[ky]) {
                             w[l] -= 0.5*J*v[l];
                             std::bitset<numSite> temp (config);
