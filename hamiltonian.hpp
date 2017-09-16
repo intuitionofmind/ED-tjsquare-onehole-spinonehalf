@@ -176,10 +176,10 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             w[h*subDim+std::distance(spinBasis.begin(), iter)] += 0.5*J*v[l];
                             }
 
-                        // hopping t term
-                        else if (h == k) {
+                        // Hopping t term.
+                        else if (h == k) { // Hole's hopping from k to kx.
                             int hh = kx;
-                            int sign = 1; // the sign for sigma t-J model  
+                            int sign = 1; // Sign for sigma t-J model.
                             if (sigma && 0 == config[hh]) { sign = -1; }
                             // if (0 == (kx % numSiteX)) { phase = std::polar(1.0, xFlux); } // In case of flux insertion. 
                             std::bitset<numSite> temp (config);
@@ -189,7 +189,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             // w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*phase*v[l];
                             w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*v[l];
                             }
-                        else if (h == kx) {
+                        else if (h == kx) {  // Hole's hopping from kx to k. 
                             int hh = k;
                             int sign = 1;
                             if (sigma && 0 == config[hh]) { sign = -1; }
@@ -198,7 +198,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             SwapBit<numSite>(temp, k, kx);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, kx-k+1)*sign*phase*v[l];
                             }
                         }
 
@@ -236,7 +236,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
                             // w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phase*v[l];
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, ky-k+1)*sign*v[l];
                             }
                         }
                     }
