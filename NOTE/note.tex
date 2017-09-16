@@ -34,16 +34,16 @@ Suppose the square lattice is formed with $N_{x}\cdot{N}_{y}=N$ sites and they h
     c_{0\sigma_{0}}^{\dagger}\cdots{c}_{h-1\sigma_{h-1}}^{\dagger}c_{h+1\sigma_{h+1}}^{\dagger}\cdots{c}_{N-1\sigma_{N-1}}^{\dagger}|0\rangle=(-)^{h}c_{h\sigma_{h}}|s\rangle\equiv|h; s\rangle,
     \label{}
 \end{equation}
-where $|s\rangle\equiv{c}_{0\sigma_{0}}^{\dagger}\cdots{c}_{N-1\sigma_{N-1}}^{\dagger}|0\rangle$ is the half-filled spin background created by \emph{ordered} fermionic operators. $|h; s\rangle$ thus can be represented as a bosonic configuration in computational program. Here our major task is to compute the vector multiplication required by the package ARPACKPP\cite{arpackpp}. $H_{J}$ can be evaluated as same as the bosonic Heisenberg spin model as one diagonal block of the $H_{t\text{-}J}$ matrix in our representation. For $H_{t}$, we would like to compute the electron's hopping term from site $h$ to site $h{'}$
+where $|s\rangle\equiv{c}_{0\sigma_{0}}^{\dagger}\cdots{c}_{N-1\sigma_{N-1}}^{\dagger}|0\rangle$ is the half-filled spin background created by \emph{ordered} fermionic operators. $|h; s\rangle$ thus can be represented as a bosonic configuration in computational program. Here our major task is to compute the vector multiplication required by the package ARPACKPP\cite{arpackpp}. $H_{J}$ can be evaluated as same as the bosonic Heisenberg spin model as one diagonal block of the $H_{t\text{-}J}$ matrix in our representation. For $H_{t}$, we would like to compute the hole's hopping term from site $h$ to site $h{'}$ (electron's hopping frome $h{'}$ to $h$)
 \begin{equation}
     \begin{aligned}
-    &\sum_{\sigma}(c_{h\sigma}^{\dagger}c_{h{'\sigma}}+h.c.)|h; s\rangle \\
+    &\sum_{\sigma}(c_{h\sigma}^{\dagger}c_{h{'\sigma}})|h; s\rangle \\
     &=c_{h\sigma_{h{'}}}^{\dagger}c_{h{'}\sigma_{h{'}}}(-)^{h}c_{h\sigma_{h}}|s\rangle=c_{h{'}\sigma_{h{'}}}(-)^{h+1}(c_{h\sigma_{h{'}}}^{\dagger}c_{h\sigma_{h}})|s\rangle \\
-    &=(-)^{h-h{'}+1}(-)^{h{'}}c_{h{'}\sigma_{h{'}}}|s{'}\rangle.
+    &=(-)^{h-h{'}+1}(-)^{h{'}}c_{h{'}\sigma_{h{'}}}|s{'}\rangle,
     \end{aligned}
     \label{}
 \end{equation}
-Note that what $|s{'}\rangle$ differs from $|s\rangle$ is that the fermionic creation operator $c_{h\sigma_{h}}^{\dagger}$ in $|s\rangle$ is replaced by $c_{h\sigma_{h{'}}}^{\dagger}$ at site $h$. That is to say, in order to evaluate the non-zero matrix elements in terms of $H_{t}$ connecting different bosonic Heisenberg sub-blocks, despite considering the bosonic $|h{'}; s{'\rangle}$ namely result hole's position and spin configuration, an extra fermionic sign $(-)^{h-h{'}+1}$ should be taken in to consideration.
+where spin summation $\sum_{\sigma}c_{h{'\sigma}}$ should match $\sigma_{h{'}}$ of which $c_{h{'}\sigma_{h{'}}}^{\dagger}$ in $|s\rangle$ otherwise leads to zero. Note that what $|s{'}\rangle$ differs from $|s\rangle$ is that the fermionic creation operator $c_{h\sigma_{h}}^{\dagger}$ in $|s\rangle$ is replaced by $c_{h\sigma_{h{'}}}^{\dagger}$ at site $h$. Its Hermatian conjugate part is similar. That is to say, in order to evaluate the non-zero matrix elements in terms of $H_{t}$ which connects different bosonic Heisenberg sub-blocks of the total Hilbert space, despite considering the change of bosonic configuration in $|h{'}; s{'\rangle}$, an extra fermionic sign $(-)^{h-h{'}+1}$ should be taken in to consideration.
 
 \bibliographystyle{apsrev4-1} 
 \bibliography{noteBib}
