@@ -2,7 +2,7 @@
 #include "precondition.hpp"
 #include "hamiltonian.hpp"
 #include "arssym.h"
-// #include "arcomp.h"
+#include "arcomp.h"
 // #include "arscomp.h"
 
 int main() {
@@ -14,8 +14,6 @@ int main() {
         auto eigValR = new double[numEval];
         auto eigValI = new double[numEval];
         auto eigVec = new double[(numEval+1)*dim];
-        auto v1 = new double[dim];
-        auto v2 = new double[dim];
         double J = 0.3;
         // PrintHam(J);
         file_log << numSite << std::endl;
@@ -25,7 +23,7 @@ int main() {
         file_log << J << std::endl;
         file_log << step << std::endl;
         file_log << sigma << std::endl;
-
+/* 
         for (int i = 0; i < numSam; ++i) {
             tjSquareHalf<double> H(dim, J);
             ARSymStdEig<double, tjSquareHalf<double>>
@@ -42,7 +40,7 @@ int main() {
                 }
 
             // Check the orthogonality of the eigenvectors.
-            /* int nPrint = nconv;
+            [>int nPrint = nconv;
             for (int j = 0; j < nPrint; ++j) {
             std::cout << std::setprecision(10) << std::real(eigValR[j]) << std::endl;
             }
@@ -56,14 +54,15 @@ int main() {
             }
             std::cout << std::endl;
             }
-            */
+           <]
             file_log << (i+1) << std::endl;
             J += step;
             }
-
+ */
         tjSquareHalf<double> H(dim, J);
+        int n = 10;
         ARSymStdEig<double, tjSquareHalf<double>>
-        prob(dim, numEval, &H, &tjSquareHalf<double>::MultVec, "SA");
+        prob(dim, n, &H, &tjSquareHalf<double>::MultVec, "SA");
         int nconv = prob.EigenValVectors(eigVec, eigValR, eigValI);
 
         for (int j = 0; j < nconv; ++j) {
@@ -74,72 +73,91 @@ int main() {
                     file_eigvecs.write((char*)(&imag), sizeof(double));
                     }
                 }
-
-        std::cout << "Now for OTOC." << std::endl;
-
-        int num = 100;
-        double timeStep = 0.001;
-        int x0 = 1;
-        int y0 = 0;
-        int x1 = 2;
-        int y1 = 1;
-
+        std::cout << dim << " " << nconv << std::endl;
+        /* 
+        // Test TimeEvolution() functions.
         auto v = new arcomplex<double>[dim];
+        auto v1 = new arcomplex<double>[dim];
+        auto v2 = new arcomplex<double>[dim];
         int s = 0;
         for (int l = 0; l < dim; ++l) {
-                arcomplex<double> e (eigValR[s*dim+l], eigValI[s*dim+l])
+                arcomplex<double> e (eigVec[s*dim+l], 0.0);
                 v[l] = e;
                 }
-        // TimeEvolution test.
+
         tjSquareHalf<arcomplex<double>> A(dim, 1.0);
         auto temp = new arcomplex<double>[dim];
+        int num = 100;
+        double timeStep = 0.001;
         for (int i = 0; i < num; ++i) {
             int n = i*10;
             A.TimeEvolutionSimple(timeStep, n, v, v1);
             A.TimeEvolutionAG(timeStep, n, v, v2);
             A.VecMinus(v1, v2, temp);
-            // std::cout << n << " " << A.Dot(v1, v1) << " " << A.Dot(v2, v2) << " " << A.Dot(temp, temp) << std::endl;
-            std::cout << std::setprecision(14) << std::abs(A.Dot(temp, temp)) << std::endl;
+            std::cout << n << " " << A.Dot(v1, v1) << " " << A.Dot(v2, v2) << " " << A.Dot(temp, temp) << std::endl;
+            // std::cout << std::setprecision(14) << std::abs(A.Dot(temp, temp)) << std::endl;
             std::cout << std::endl;
             }
-/* 
-                    for (int i = 0; i < num; ++i) {
-                            int n = i*10;
-                            double bf = H.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
-                            std::cout << n << " " << bf << std::endl; 
-                            }
-
-                    int cut = 100;
-                    auto zArray = new double[cut]; // The array for partition function. 
-                    for (int i = 0; i < cut; ++i) {
-                            double deltaE = std::real(eigValSort[i])-std::real(eigValSort[0]);
-                            zArray[i] = std::exp(-1.0*beta*deltaE);
-                            }
-                    for (int i = 0; i < num; ++i) {
-                            int n = i*10;
-                            double pf = 0.0; // Partition function. 
-                            double tr = 0.0; // Quantity traced over. 
-                            for (int j = 0; j < cut; ++j) {
-                                double deltaE = std::real(eigValSort[j])-std::real(eigValSort[0]);
-                                double z = std::exp(-1.0*beta*deltaE);
-                                std::cout << z << std::endl;
-                                pf += z;
-                                for (int l = 0; l < dim; ++l) {
-                                    v[l] = eigVec[order[j]*dim+l];
-                                    }
-                                double butterfly = H.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
-                                tr += z*butterfly;
-                                }
-                            tr = tr/pf;
-                            std::cout << n << " " << tr << std::endl;
-                            }
- */
-
-                    delete [] eigValR;
-        delete [] eigValI;
-        delete [] eigVec;
+        delete [] v;
         delete [] v1;
         delete [] v2;
+ */
+
+//-------------OTOC
+        int num = 1000;
+        double timeStep = 0.001;
+        auto v = new arcomplex<double>[dim];
+
+        int x0 = 1;
+        int y0 = 0;
+        int x1 = 2;
+        int y1 = 1;
+/* 
+        tjSquareHalf<arcomplex<double>> A(dim, J);
+        int s = 0;
+        for (int l = 0; l < dim; ++l) {
+                arcomplex<double> e (eigVec[s*dim+l], 0.0);
+                v[l] = e;
+                }
+        for (int i = 0; i < num; ++i) {
+                int n = i*10;
+                double bf = A.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
+                std::cout << std::setprecision(14) << bf << std::endl;
+                file_log << i << std::endl;
+                }
+ */
+        int cut = 100;
+        auto zArray = new double[cut]; // The array for partition function. 
+        double pf = 0.0; // Partition function. 
+        for (int i = 0; i < cut; ++i) {
+                double deltaE = eigValR[i]-eigValR[0];
+                zArray[i] = std::exp(-1.0*beta*deltaE);
+                // std::cout << deltaE << " " <<zArray[i] << std::endl;
+                pf += zArray[i];
+                }
+
+        tjSquareHalf<arcomplex<double>> A(dim, J);
+         for (int i = 0; i < num; ++i) {
+                int n = i*10;
+                double tr = 0.0; // Quantity traced over. 
+                for (int j = 0; j < cut; ++j) {
+                    for (int l = 0; l < dim; ++l) {
+                        arcomplex<double> e (eigVec[j*dim+l], 0.0);
+                        v[l] = e;
+                        }
+                    double butterfly = A.TimeSzCommutatorSquare(x0, y0, x1, y1, timeStep, n, v);
+                    tr += zArray[j]*butterfly;
+                    }
+                tr = tr/pf;
+                std::cout << std::setprecision(14) << tr << std::endl;
+                file_log << i << std::endl;
+                }
+
+        delete [] v;
+ 
+        delete [] eigValR;
+        delete [] eigValI;
+        delete [] eigVec;
 
         end = time(NULL);
 

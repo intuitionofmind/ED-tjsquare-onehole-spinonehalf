@@ -47,7 +47,7 @@ int main() {
             std::cout << i << std::endl;
             tjSquareHalf<arcomplex<double>> H(dim, J);
             ARCompStdEig<double, tjSquareHalf<arcomplex<double>>> prob;
-            prob.DefineParameters(dim, numEval, &H, &tjSquareHalf<arcomplex<double>>::MultVec, "SR", 30);
+            prob.DefineParameters(dim, numEval, &H, &tjSquareHalf<arcomplex<double>>::MultVec, "SR");
             int nconv = prob.EigenValVectors(eigVec, eigVal);
             std::vector<int> order;
             H.SortEval(nconv, eigVal, eigValSort, order);

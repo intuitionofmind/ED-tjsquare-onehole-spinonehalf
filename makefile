@@ -4,12 +4,11 @@
 # with the g++ compiler under linux.
 
 PLAT = linux
-CPP = g++
+CPP = g++-mp-7
+# CPP = gcc
 
-ARPACKPP_DIR = ${HOME}/Downloads/arpackpp
+ARPACKPP_DIR = ${HOME}/Packages/arpackpp
 ARPACKPP_INC = ${ARPACKPP_DIR}/include
-SUPERLU_DIR = ${ARPACKPP_INC}
-UMFPACK_DIR = ${ARPACKPP_INC}
 
 # Defining ARPACK, LAPACK, UMFPACK, SUPERLU, BLAS and FORTRAN libraries.
 # See the arpack++ manual or the README file for directions on how to 
@@ -24,34 +23,40 @@ UMFPACK_DIR = ${ARPACKPP_INC}
 # arpack++ on another environment.
 
 
-LAPACK_LIB = -llapack
-SUPERLU_LIB = -lsuperlu
-BLAS_LIB = -lblas
-ARPACK_LIB = -larpack
-FORTRAN_LIBS = -lgfortran
+BLAS_LIB = -L/opt/local/lib/lapack/ -lblas
+LAPACK_LIB = -L/opt/local/lib/lapack/ -llapack
+# SUPERLU_LIB = -L/opt/local/lib -lsuperlu
+# ARPACK_LIB = -L/opt/local/lib -larpack
+
+# BLAS_LIB = -lblas
+# LAPACK_LIB = -llapack
+ARPACK_LIB = -L/opt/local/lib -larpack
 
 CPP_WARNINGS = -fpermissive -Wall -ansi
 # CPP_WARNINGS =  -pedantic-errors
 CPP_DEBUG = -g
 CPP_OPTIM = -O2 -std=c++11
 
-CPP_FLAGS = -I${ARPACKPP_INC} \
-            ${CPP_DEBUG} ${CPP_WARNINGS} ${CPP_OPTIM} \
+CPP_INC = -I${ARPACKPP_INC}
 
+CPP_FLAGS = ${CPP_DEBUG} ${CPP_WARNINGS} ${CPP_OPTIM}
+
+ALL_LIBS = ${BLAS_LIB} ${LAPACK_LIB} ${ARPACK_LIB}
 # Putting all libraries together.
 
-ALL_LIBS = -L/opt/local/lib/ \
-	   ${BLAS_LIB} ${LAPACK_LIB} ${ARPACK_LIB} ${FORTRAN_LIBS}
+# Specify the path of the libraries in your environment.
+
+# ALL_LIBS = -l/opt/local/lib/lapack/libblas.dylib -l/opt/local/lib/lapack/liiblapack.dylib -l/opt/local/lib/libsuperlu.lib
 
 OBJS = main.o
-TARGET = tjsquare 
+TARGET = tJsquare
 
 all:${TARGET}
 $(TARGET):${OBJS}
-	${CPP} ${CPP_FLAGS} ${ALL_LIBS} $^ -o $@
+	${CPP} ${CPP_INC} ${CPP_FLAGS} ${ALL_LIBS} $^ -o $@
 
 main.o:main.cpp
-	${CPP} ${CPP_FLAGS} ${ALL_LIBS} -c $< -o $@
+	${CPP} ${CPP_INC} ${CPP_FLAGS} ${ALL_LIBS} -c $< -o $@
 
 clean:
 	rm -f ${TARGET} *.o log *.dat

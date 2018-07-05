@@ -27,10 +27,14 @@ class tjSquareHalf {
         private:
         int n;
         T J;
+        double xFlux;
+        double yFlux;
 
         public:
         int Dim();
         T CoupStren();
+        double XFlux();
+        double YFlux();
         T Dot(T* v1, T* v2);
         void VecPlus(T* v1, T* v2, T* w);
         void VecMinus(T* v1, T* v2, T* w);
@@ -47,9 +51,11 @@ class tjSquareHalf {
         T Correlation(T* v, int i, int j);
         void Marshall(T* v1, T* v2);
         // constructor
-        tjSquareHalf(int d, T j) { 
+        tjSquareHalf(int d, T j, double fx, double fy) { 
             n = d;
             J = j;
+            xFlux = fx;
+            yFlux = fy;
             }  
         };
 
@@ -58,6 +64,12 @@ int tjSquareHalf<T>::Dim() { return n; }
 
 template<typename T>
 T tjSquareHalf<T>::CoupStren() { return J; }
+
+template<typename T>
+double tjSquareHalf<T>::XFlux() { return xFlux; }
+
+template<typename T>
+double tjSquareHalf<T>::YFlux() { return yFlux; }
 
 template<typename T>
 T tjSquareHalf<T>::Dot(T* v1, T* v2) {
@@ -139,6 +151,9 @@ template<typename T>
 void tjSquareHalf<T>::MultVec(T* v, T* w) {
         int len = Dim();
         T J = CoupStren();
+        double fx = XFlux();
+        double fy = YFlux();
+
         for (int l = 0; l < len; ++l) { w[l] = 0.0; } 
         for (int l = 0; l < len; ++l) {
             if (0.0 == v[l]) { continue; }
@@ -173,32 +188,33 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             temp.flip(kx);
                             int ss = RetrieveSpin<numSite>(temp, h);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[h*subDim+std::distance(spinBasis.begin(), iter)] += 0.5*J*v[l];
+                            w[h*subDim+std::distance(spinBasis.begin(), iter)] += alpha*0.5*J*v[l];
                             }
 
                         // Hopping t term.
                         else if (h == k) { // Hole's hopping from k to kx.
                             int hh = kx;
                             int sign = 1; // Sign for sigma t-J model.
+                            std::complex<double> phaseX(1.0, 0.0);
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            // if (0 == (kx % numSiteX)) { phase = std::polar(1.0, xFlux); } // In case of flux insertion. 
+                            if (0 == (kx % numSiteX)) { phaseX = std::polar(1.0, fx); } // In case of flux insertion. 
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, kx);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            // w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*phase*v[l];
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-kx+1)*sign*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= alpha*1.0*pow(-1.0, k-kx+1)*sign*phaseX*v[l];
                             }
                         else if (h == kx) {  // Hole's hopping from kx to k. 
                             int hh = k;
                             int sign = 1;
+                            std::complex<double> phaseX(1.0, 0.0);
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            // if (0 == (kx % numSiteX)) { phase = std::polar(1.0, xFlux); }
+                            if (0 == (kx % numSiteX)) { phaseX = std::polar(1.0, -1.0*fx); }
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, kx);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, kx-k+1)*sign*phase*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= alpha*1.0*pow(-1.0, kx-k+1)*sign*phaseX*v[l];
                             }
                         }
 
@@ -214,29 +230,30 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
                             w[h*subDim+std::distance(spinBasis.begin(), iter)] += 0.5*J*v[l];
                             }
+
                         else if (h == k) {
                             int hh = ky;
                             int sign = 1;
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            // if (0 == (ky % numSiteY)) { phase = std::polar(1.0, yFlux); }
+                            std::complex<double> phaseY(1.0, 0.0);
+                            if (0 == (ky % numSiteY)) { phaseY = std::polar(1.0, fy); }
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, ky);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            // w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phase*v[l];
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phaseY*v[l];
                             }
                         else if (h == ky) {
                             int hh = k;
                             int sign = 1;
                             if (sigma && 0 == config[hh]) { sign = -1; }
-                            // if (0 == (ky % numSiteY)) { phase = std::polar(1.0, yFlux); }
+                            std::complex<double> phaseY(1.0, 0.0);
+                            if (0 == (ky % numSiteY)) { phase = std::polar(1.0, -1.0*fy); }
                             std::bitset<numSite> temp (config);
                             SwapBit<numSite>(temp, k, ky);
                             int ss = RetrieveSpin<numSite>(temp, hh);
                             std::vector<int>::iterator iter = std::lower_bound(spinBasis.begin(), spinBasis.end(), ss);
-                            // w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phase*v[l];
-                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, ky-k+1)*sign*v[l];
+                            w[hh*subDim+std::distance(spinBasis.begin(), iter)] -= 1.0*pow(-1.0, k-ky+1)*sign*phaseY*v[l];
                             }
                         }
                     }
