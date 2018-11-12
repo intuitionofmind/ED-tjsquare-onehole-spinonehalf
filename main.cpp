@@ -29,8 +29,8 @@ int main() {
         auto v1 = new arcomplex<double>[dim];
         auto v2 = new arcomplex<double>[dim];
 
-        // double J = 0.3333333333333333;
-        double J = 1.0;
+        double J = 0.3333333333333333;
+        // double J = 1.0;
         double xFlux = 0.0*PI;
         double yFlux = 0.0*PI;
         // PrintHam(J);
@@ -47,9 +47,10 @@ int main() {
 //        auto vv3 = new arcomplex<double>[dim];
 //        auto vv4 = new arcomplex<double>[dim];
 
+        double alpha = 0.01;
         for (int i = 0; i < numSam; ++i) {
             std::cout << i << std::endl;
-            tjSquareHalf<arcomplex<double>> H(dim, J, xFlux, yFlux);
+            tjSquareHalf<arcomplex<double>> H(dim, J, xFlux, yFlux, alpha);
             ARCompStdEig<double, tjSquareHalf<arcomplex<double>>> prob;
             prob.DefineParameters(dim, numEval, &H, &tjSquareHalf<arcomplex<double>>::MultVec, "SR");
             int nconv = prob.EigenValVectors(eigVec, eigVal);
@@ -147,7 +148,7 @@ int main() {
 //            for (int j = 0; j < dim; ++j) {std::cout << vv3[j] << " ";}
 //            std::cout << std::endl;
             file_log << (i+1) << std::endl;
-            J += 0.1;
+            alpha += 0.01;
             }
         delete [] eigVal;
         delete [] eigValSort;
@@ -171,8 +172,8 @@ int main() {
         }
 
 // PrintHam() function is used to print the Hamiltonian matrix explicitly to check whether the code is right or not.
-void PrintHam(double JJ, double xFlux, double yFlux) {
-        tjSquareHalf<arcomplex<double>> A(dim, JJ, xFlux, yFlux);
+void PrintHam(double JJ, double xFlux, double yFlux, double alpha) {
+        tjSquareHalf<arcomplex<double>> A(dim, JJ, xFlux, yFlux, alpha);
         arcomplex<double>* v1 = new arcomplex<double>[dim];
         arcomplex<double>* v2 = new arcomplex<double>[dim];
         arcomplex<double>* temp = new arcomplex<double>[dim];

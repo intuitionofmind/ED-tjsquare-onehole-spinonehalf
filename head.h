@@ -20,7 +20,7 @@
 #define PI 3.14159265358979
 
 int main();
-void PrintHam(double JJ, double xFlux, double yFlux);
+void PrintHam(double JJ, double xFlux, double yFlux, double alpha);
 
 // precondition.hpp
 int SpinBasisConstruct(std::vector<int> &vec);

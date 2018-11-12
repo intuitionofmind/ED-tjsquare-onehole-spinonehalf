@@ -30,11 +30,14 @@ class tjSquareHalf {
         double xFlux;
         double yFlux;
 
+        double alpha;
+
         public:
         int Dim();
         T CoupStren();
         double XFlux();
         double YFlux();
+        double Alpha();
         T Dot(T* v1, T* v2);
         void VecPlus(T* v1, T* v2, T* w);
         void VecMinus(T* v1, T* v2, T* w);
@@ -51,11 +54,12 @@ class tjSquareHalf {
         T Correlation(T* v, int i, int j);
         void Marshall(T* v1, T* v2);
         // constructor
-        tjSquareHalf(int d, T j, double fx, double fy) { 
+        tjSquareHalf(int d, T j, double fx, double fy, double a) { 
             n = d;
             J = j;
             xFlux = fx;
             yFlux = fy;
+            alpha = a;
             }  
         };
 
@@ -70,6 +74,9 @@ double tjSquareHalf<T>::XFlux() { return xFlux; }
 
 template<typename T>
 double tjSquareHalf<T>::YFlux() { return yFlux; }
+
+template<typename T>
+double tjSquareHalf<T>::Alpha() { return alpha; }
 
 template<typename T>
 T tjSquareHalf<T>::Dot(T* v1, T* v2) {
@@ -153,6 +160,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
         T J = CoupStren();
         double fx = XFlux();
         double fy = YFlux();
+        double alpha = Alpha();
 
         for (int l = 0; l < len; ++l) { w[l] = 0.0; } 
         for (int l = 0; l < len; ++l) {
