@@ -190,7 +190,7 @@ void tjSquareHalf<T>::MultVec(T* v, T* w) {
                     if ("PBC" == flagBounX || kx > k) {
                         // Heisenberg J term
                         if (k != h && kx != h && config[k] != config[kx]) {
-                            w[l] -= 0.5*J*v[l];
+                            w[l] -= alpha*0.5*J*v[l];
                             std::bitset<numSite> temp (config);
                             temp.flip(k);
                             temp.flip(kx);
